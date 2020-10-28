@@ -1,2 +1,4 @@
 # sftp-azblob
-picks zip from sftp location to Azure Blob
+Downloads zip from sftp location
+Extract the file which is password protected
+uploads to Azure Blob

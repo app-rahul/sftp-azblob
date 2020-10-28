@@ -14,7 +14,7 @@ try{
     if (!fs.existsSync(localdir)){
         fs.mkdirSync(localdir);
     }
-    else{
+    else if(fs.existsSync(localFile)){
         fs.rmSync(localFile);
     }
     
