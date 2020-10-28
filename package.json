@@ -1,0 +1,24 @@
+{
+  "name": "sftp-azblob",
+  "version": "1.0.0",
+  "description": "unzip password protected from ssh sftp to azure blob",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/app-rahul/sftp-azblob.git"
+  },
+  "author": "Rahul Kumar",
+  "license": "MIT",
+  "dependencies": {
+    "ssh2": "^0.8.9",
+    "ssh2-streams": "^0.4.10",
+    "unzipper": "^0.10.11"
+  },
+  "bugs": {
+    "url": "https://github.com/app-rahul/sftp-azblob/issues"
+  },
+  "homepage": "https://github.com/app-rahul/sftp-azblob#readme"
+}
