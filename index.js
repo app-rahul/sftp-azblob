@@ -2,7 +2,10 @@ const fs = require('fs');
 const config = require('./config');
 const unzipper = require('unzipper');
 const Client = require('ssh2').Client;
+const { BlobServiceClient } = require('@azure/storage-blob');
 
+const logPath = config.logDirectory + '/' + config.logName;
+    
 try {
     const conn = new Client();
     const sshOpt = config.sshOpt;
@@ -11,7 +14,6 @@ try {
     const localZipFileName = config.localZipFileName;
     const localFile = localdir + '/' + localZipFileName;
     const localZipPassword = config.zipFilePassword;
-    const logPath = config.logDirectory + '/' + config.logName;
     if (!fs.existsSync(config.logDirectory)) {
         fs.mkdirSync(config.logDirectory);
     }
@@ -21,7 +23,8 @@ try {
     else if (fs.existsSync(localFile)) {
         fs.unlinkSync(localFile);
     }
-
+    const blobServiceClient = BlobServiceClient.fromConnectionString(config.azureBlobConnectionString);
+    const containerClient = blobServiceClient.getContainerClient(config.azureBlobcontainerName);
     conn.on('ready', () => {
         conn.sftp((err, sftp) => {
             if (err) {
@@ -38,10 +41,16 @@ try {
                 conn.end();
                 (async () => {
                     try {
-                        //var wstream = fs.createWriteStream('out1.txt');
                         const directory = await unzipper.Open.file(localFile);
-                        const extractedstram = await directory.files[0].buffer(localZipPassword);
-                        console.log(extractedstram.toString());
+                        const extractedstram = directory.files[0].stream(localZipPassword);
+                        // Get a block blob client
+                        const blockBlobClient = containerClient.getBlockBlobClient(config.azureBlobName);
+
+                        console.log('Uploading to Azure storage as blob:\n\t', config.azureBlobName);
+
+                        // Upload data to the blob
+                        const uploadBlobResponse = await blockBlobClient.uploadStream(extractedstram);
+                        console.log("Blob was uploaded successfully. requestId: ", uploadBlobResponse.requestId);
                     }
                     catch (err) {
                         fs.appendFileSync(logPath, Date() + JSON.stringify(err) + "\n");
