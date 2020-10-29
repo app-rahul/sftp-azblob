@@ -30,7 +30,7 @@ try{
                 try {
                     //var wstream = fs.createWriteStream('out1.txt');
                     const directory = await unzipper.Open.file(localFile);
-                    const extractedstram = await directory.files[0].st(localZipPassword);
+                    const extractedstram = await directory.files[0].buffer(localZipPassword);
                     console.log(extractedstram.toString());
                 }
                 catch(ex) {
