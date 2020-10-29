@@ -1,4 +1,4 @@
-module.exports = {
+const config = {
     sshOpt : {
         host: '',
         username: '',
@@ -6,6 +6,11 @@ module.exports = {
     },
     remoteZipFilePath : '',
     zipFilePassword : '',
+    azureBlobConnectionString : '',
     localdir : 'temp',
-    localZipFileName : 'sample.zip'
-}
+    localZipFileName : 'sample.zip',
+    logDirectory : 'Log',
+    logName:'ErrorLogs.log'
+};
+
+module.exports = config;
