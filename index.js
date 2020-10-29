@@ -1,21 +1,21 @@
 const Client = require('ssh2').Client;
 const fs = require('fs');
+const unzipper = require('unzipper');
+const config = require('./config');
 const conn = new Client();    
-const sshOpt = {
-    host: 'test.rebex.net',
-    username: 'demo',
-    password: 'password'
-};    
-const remoteFile = '/pub/example/readme.txt';
-const localdir = 'temp';
-const localZipFileName = 'sample.zip';
+const sshOpt = config.sshOpt;
+const remoteFile = config.remoteZipFilePath;
+const localdir = config.localdir;
+const localZipFileName = config.localZipFileName;
 const localFile = localdir + '/' + localZipFileName;
+const localZipPassword = config.zipFilePassword;
+
 try{
     if (!fs.existsSync(localdir)){
         fs.mkdirSync(localdir);
     }
     else if(fs.existsSync(localFile)){
-        fs.rmSync(localFile);
+        fs.unlinkSync(localFile);
     }
     
     conn.on('ready', () => {
@@ -26,7 +26,17 @@ try{
               if (err) throw err;
               console.log('Downloaded to ' + localFile);
               conn.end();
-              
+              (async () => {
+                try {
+                    //var wstream = fs.createWriteStream('out1.txt');
+                    const directory = await unzipper.Open.file(localFile);
+                    const extractedstram = await directory.files[0].st(localZipPassword);
+                    console.log(extractedstram.toString());
+                }
+                catch(ex) {
+                    throw ex;
+                }
+              })();
             });
         });
     });
