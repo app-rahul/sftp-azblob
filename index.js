@@ -1,19 +1,19 @@
 const fs = require('fs');
+const https = require('https');
 const config = require('./config');
 const unzipper = require('unzipper');
 const Client = require('ssh2').Client;
-const { BlobServiceClient } = require('@azure/storage-blob');
-
 const logPath = config.logDirectory + '/' + config.logName;
-    
+
 try {
     const conn = new Client();
     const sshOpt = config.sshOpt;
-    const remoteFile = config.remoteZipFilePath;
     const localdir = config.localdir;
+    const remoteFile = config.remoteZipFilePath;
     const localZipFileName = config.localZipFileName;
     const localFile = localdir + '/' + localZipFileName;
     const localZipPassword = config.zipFilePassword;
+
     if (!fs.existsSync(config.logDirectory)) {
         fs.mkdirSync(config.logDirectory);
     }
@@ -23,8 +23,7 @@ try {
     else if (fs.existsSync(localFile)) {
         fs.unlinkSync(localFile);
     }
-    const blobServiceClient = BlobServiceClient.fromConnectionString(config.azureBlobConnectionString);
-    const containerClient = blobServiceClient.getContainerClient(config.azureBlobcontainerName);
+
     conn.on('ready', () => {
         conn.sftp((err, sftp) => {
             if (err) {
@@ -42,15 +41,28 @@ try {
                 (async () => {
                     try {
                         const directory = await unzipper.Open.file(localFile);
-                        const extractedstram = directory.files[0].stream(localZipPassword);
-                        // Get a block blob client
-                        const blockBlobClient = containerClient.getBlockBlobClient(config.azureBlobName);
-
-                        console.log('Uploading to Azure storage as blob:\n\t', config.azureBlobName);
-
-                        // Upload data to the blob
-                        const uploadBlobResponse = await blockBlobClient.uploadStream(extractedstram);
-                        console.log("Blob was uploaded successfully. requestId: ", uploadBlobResponse.requestId);
+                        const extractedbuffer = await directory.files[0].buffer(localZipPassword);
+                        console.log('file extracted');
+                        const sasURL = config.azureBlobRootURL + config.azureBlobPath + '/' + config.azureBlobName + config.azureBlobSasToken;
+                        console.log('sas url ' + sasURL);
+                        const data = extractedbuffer.toString();
+                        const options = {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Length': data.length,
+                                'x-ms-blob-type': 'BlockBlob'
+                            }
+                        }
+                        const req = https.request(sasURL, options, (res) => {
+                            console.log(`statusCode: ${res.statusCode}`)
+                            res.on('data', (d) => { console.log(d.toString()); })
+                        })
+                        req.on('error', (err) => {
+                            fs.appendFileSync(logPath, Date() + JSON.stringify(err) + "\n");
+                            throw err;
+                        })
+                        req.write(data)
+                        req.end()
                     }
                     catch (err) {
                         fs.appendFileSync(logPath, Date() + JSON.stringify(err) + "\n");
