@@ -46,6 +46,9 @@ try {
                         const sasURL = config.azureBlobRootURL + config.azureBlobPath + '/' + config.azureBlobName + config.azureBlobSasToken;
                         console.log('sas url ' + sasURL);
                         const data = extractedbuffer.toString();
+                        if (fs.existsSync(localFile)) {
+                            fs.unlinkSync(localFile);
+                        }
                         const options = {
                             method: 'PUT',
                             headers: {
