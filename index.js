@@ -3,19 +3,20 @@ const https = require('https');
 const config = require('./config');
 const unzipper = require('unzipper');
 const Client = require('ssh2').Client;
-const logPath = config.logDirectory + '/' + config.logName;
+const dirPath = __dirname + '/';
+const logPath = dirPath + config.logDirectory + '/' + config.logName;
 
 try {
     const conn = new Client();
     const sshOpt = config.sshOpt;
-    const localdir = config.localdir;
+    const localdir = dirPath + config.localdir;
     const remoteFile = config.remoteZipFilePath;
     const localZipFileName = config.localZipFileName;
     const localFile = localdir + '/' + localZipFileName;
     const localZipPassword = config.zipFilePassword;
 
-    if (!fs.existsSync(config.logDirectory)) {
-        fs.mkdirSync(config.logDirectory);
+    if (!fs.existsSync(dirPath + config.logDirectory)) {
+        fs.mkdirSync(dirPath + config.logDirectory);
     }
     if (!fs.existsSync(localdir)) {
         fs.mkdirSync(localdir);
