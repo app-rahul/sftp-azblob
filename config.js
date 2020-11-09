@@ -12,7 +12,8 @@ const config = {
     localdir : 'temp',
     localZipFileName : 'sample.zip',
     logDirectory : 'Log',
-    logName:'ErrorLogs.log'
+    logName:'ErrorLogs.log',
+    lastModifiedRemoteZipFilePicked:'LastPickedFileAt.txt'
 };
 
 module.exports = config;
